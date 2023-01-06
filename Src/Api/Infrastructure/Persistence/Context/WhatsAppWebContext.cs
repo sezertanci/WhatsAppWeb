@@ -31,7 +31,7 @@ namespace Persistence.Context
         {
             if(!optionsBuilder.IsConfigured)
             {
-             //   optionsBuilder.UseSqlServer("server=DESKTOP-R31O7VH\\SQLEXPRESS;Database=WhatsAppWeb;integrated security=true;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("server=DESKTOP-R31O7VH\\SQLEXPRESS;Database=WhatsAppWeb;integrated security=true;TrustServerCertificate=True;");
             }
         }
 
