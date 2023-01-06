@@ -1,0 +1,134 @@
+﻿<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="home" aria-selected="true">Giriş Yap</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="profile" aria-selected="false">Kayıt Ol</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                <br />
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-8">
+                        <form>
+                            <div class="form-group">
+                                <label for="txtPhoneNumber">Telefon Numarası</label>
+                                <input type="text" class="form-control" id="txtPhoneNumber" aria-describedby="PhoneNumberHelp" placeholder="(_ _ _) _ _ _  _ _  _ _" required>
+                                <small id="PhoneNumberHelp" class="form-text text-muted">Telefon numaranızı başında 0 olmadan giriniz.</small>
+                            </div>
+                            <br />
+                            <div class="form-group">
+                                <label for="txtPassword">Şifre</label>
+                                <input type="password" class="form-control" id="txtPassword" placeholder="******" required>
+                                <small id="PhoneNumberHelp" class="form-text text-muted">Şifreniz en az 6 en çok 50 karakter olmalıdır.</small>
+                            </div>
+                            <br />
+                            <button type="button" class="btn btn-outline-primary" style="width:100%" id="btnLogin">Giriş Yap</button>
+                        </form>
+                    </div>
+                    <div class="col-md-2"></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+                <br />
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-8">
+                        <form>
+                            <div class="form-group">
+                                <label for="txtPhoneNumber">Telefon Numarası</label>
+                                <input type="text" class="form-control" id="txtPhoneNumberR" aria-describedby="PhoneNumberHelp" placeholder="(_ _ _) _ _ _  _ _  _ _" required>
+                                <small id="PhoneNumberHelp" class="form-text text-muted">Telefon numaranızı başında 0 olmadan giriniz.</small>
+                            </div>
+                            <br />
+                            <div class="form-group">
+                                <label for="txtName">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="txtNameR" aria-describedby="NameHelp" placeholder="" required>
+                                <small id="NameHelp" class="form-text text-muted">Kullanıcı adı en fazla 50 karakter olamalıdır.</small>
+                            </div>
+                            <br />
+                            <div class="form-group">
+                                <label for="txtPassword">Şifre</label>
+                                <input type="password" class="form-control" id="txtPasswordR" placeholder="******" required>
+                                <small id="PhoneNumberHelp" class="form-text text-muted">Şifreniz en az 6 en çok 50 karakter olmalıdır.</small>
+                            </div>
+                            <br />
+                            <button type="button" class="btn btn-outline-primary" style="width:100%" id="btnRegister">Kayıt Ol</button>
+                        </form>
+                    </div>
+                    <div class="col-md-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(() => {
+            $("#btnLogin").click(() => {
+                data = {
+                    PhoneNumber: $("#txtPhoneNumber").val(),
+                    Password: $("#txtPassword").val()
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: apiLink + "User/Login",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        //window.location.href = "/Home/Index";
+                        window.localStorage.setItem("userId", result.Id);
+                        window.localStorage.setItem("userName", result.Name);
+                        window.localStorage.setItem("userPhoneNumber", result.PhoneNumber);
+
+                        console.log(result);
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(xhr.responseText);
+                    },
+                    async: true
+                });
+            });
+
+            $("#btnRegister").click(() => {
+                data = {
+                    PhoneNumber: $("#txtPhoneNumberR").val(),
+                    Name: $("#txtNameR").val(),
+                    Password: $("#txtPasswordR").val()
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: apiLink + "User/Create",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        window.location.href = "/Home/Index";
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(err.Message);
+                    },
+                    async: true
+                });
+            });
+        });
+    </script>
+}

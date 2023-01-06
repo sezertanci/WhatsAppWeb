@@ -1,0 +1,230 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    /*background: #f1f1f1;*/
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+.hidden {
+    display: none;
+}
+
+.divTitle {
+    border-bottom: 1px solid black;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.divChatBackground {
+    background-color: #454444;
+    color: white;
+}
+
+.divTitleBackground {
+    background-color: grey;
+    color: white;
+    border-top-right-radius: 4px;
+}
+
+.divChatText {
+    font-weight: 700;
+    font-size: 20px;
+    padding-left: 25px;
+}
+
+.divChatsLeftRadius {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.divChatRightRadius {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.divChatUser {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    height: 515px;
+    overflow-y: auto;
+}
+
+.divMessagesArea {
+    border-bottom-right-radius: 4px;
+    background-image: url('background.png');
+    height: 515px;
+    align-content: end;
+}
+
+    .divMessagesArea .divReceivedMessage {
+        background-color: grey;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-bottom: 3px;
+        width: fit-content;
+        max-width: 350px;
+    }
+
+    .divMessagesArea .divSendMessage {
+        background-color: #529d52;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-bottom: 3px;
+        width: fit-content;
+        max-width: 350px;
+    }
+
+.chatCard {
+    padding: 5px;
+    margin-bottom: 2px;
+}
+
+    .chatCard:hover {
+        background-color: grey;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .chatCard .userName {
+        font-weight: 700;
+    }
+
+    .chatCard .messajInfo {
+        color: lightgray;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .chatCard small {
+        color: lightgray;
+        padding-top: 4px;
+    }
+
+    .chatCard .divDflex {
+        padding: 0 5px;
+    }
+
+.activeChat {
+    background-color: cadetblue;
+    border-radius: 8px;
+}
+
+
+.messageList {
+    overflow-y: auto;
+    max-height: 480px;
+}
+
+    .messageList .messageSpan {
+        padding-right: 40px;
+    }
+
+    .messageList .divSmall {
+        text-align: end;
+        font-size: 12px;
+    }
+
+.btnSendMessage {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.userFriendCard {
+    padding: 5px;
+    margin-bottom: 2px;
+}
+
+    .userFriendCard:hover {
+        background-color: grey;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+    }
+
+    .userFriendCard small {
+        color: lightgray;
+        padding-top: 4px;
+    }
+
+    .userFriendCard .divDflex {
+        padding: 0 5px;
+    }
+
+
+@media screen and (max-width: 400px) {
+    .divMessagesArea {
+        height: 300px;
+    }
+
+    .messageList {
+        max-height: 267px;
+    }
+
+    .divChatUser {
+        height: auto;
+        max-height: 300px;
+    }
+
+    .divMessagesArea {
+        height: auto;
+        min-height: 300px;
+        max-height: 300px;
+    }
+}
+
+#scrollButton {
+    display: none;
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99;
+    font-size: 15px;
+    border: none;
+    outline: none;
+    background-color: gray;
+    color: white;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 24px;
+    width: 46px;
+}
+
+    #scrollButton:hover {
+        background-color: #555;
+    }
