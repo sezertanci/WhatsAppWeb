@@ -14,6 +14,7 @@ namespace WebApi.Controllers
 
             return Ok(result);
         }
+
         [HttpPut("Update")]
         public async Task<IActionResult> Update([FromBody] UpdateGroupCommand updateGroupCommand)
         {

@@ -228,3 +228,11 @@ body {
     #scrollButton:hover {
         background-color: #555;
     }
+
+.pointer {
+    cursor: pointer;
+}
+
+#divSelectedName {
+    padding-top: 5px;
+}
