@@ -39,12 +39,8 @@ namespace Persistence.Menagers
 
                     ChatMessageViewModel chatMessageViewModel = new()
                     {
-                        ChatId = userChat.ChatId,
                         IsMyMessage = isMyMessage,
                         Message = userChatMessage.Message,
-                        ReceiverUserId = isMyMessage ? friendUserId : userId,
-                        SenderUserId = isMyMessage ? userId : friendUserId,
-                        UserChatId = userChat.Id,
                         SendedDate = userChatMessage.CreatedDate,
                         HasBeenRead = userChatMessage.HasBeenRead
                     };
@@ -120,12 +116,9 @@ namespace Persistence.Menagers
 
                 ChatMessageViewModel receivedMessageViewModel = new()
                 {
-                    ChatId = chat.Id,
                     Message = sendedMessageViewModel.Message,
                     SendedDate = userChatMessage.CreatedDate,
-                    UserChatId = senderUserChat.Id,
                     SenderUserId = senderUserChat.UserId,
-                    ReceiverUserId = receiverUserChat.UserId,
                     HasBeenRead = false
                 };
 
@@ -143,12 +136,9 @@ namespace Persistence.Menagers
 
                 ChatMessageViewModel receivedMessageViewModel = new()
                 {
-                    ChatId = chatId,
                     Message = sendedMessageViewModel.Message,
                     SendedDate = userChatMessage.CreatedDate,
-                    UserChatId = userChatMessage.UserChatId,
                     SenderUserId = sendedMessageViewModel.SenderUserId,
-                    ReceiverUserId = sendedMessageViewModel.ReceiverUserId,
                     HasBeenRead = false
                 };
 

@@ -4,7 +4,7 @@ using Common.Models.RequestModels.GroupRequestModels;
 using Domain.Models;
 using MediatR;
 
-namespace Application.Commands.GroupCommand
+namespace Application.Commands.GroupCommand.Update
 {
     public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand, bool>
     {
@@ -19,10 +19,10 @@ namespace Application.Commands.GroupCommand
         {
             Group group = await groupRepository.GetByIdAsync(request.Id);
 
-            if(group == null)
+            if (group == null)
                 throw new DatabaseValidationException($"({request.Id}) Bu Id ile ilgili grup bulunamadı!");
 
-            if(group.UserId != request.UserId)
+            if (group.UserId != request.UserId)
                 throw new DatabaseValidationException($"({request.UserId}) Bu Id'ye sahip kullanıcı bu işlemi gerçekleştiremez!");
 
             group.Name = request.Name;

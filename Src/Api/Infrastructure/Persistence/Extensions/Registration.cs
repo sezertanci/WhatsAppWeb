@@ -35,6 +35,8 @@ namespace Persistence.Extensions
             services.AddScoped<IUserFriendService, UserFriendManager>();
             services.AddScoped<IUserChatMessageService, UserChatMessageManager>();
             services.AddScoped<IUserChatService, UserChatManager>();
+            services.AddScoped<IGroupUserService, GroupUserManager>();
+            services.AddScoped<IGroupMessageService, GroupMessageManager>();
 
             return services;
         }

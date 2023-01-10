@@ -9,5 +9,7 @@
         public bool IsMyMessage { get; set; }
         public bool HasBeenRead { get; set; }
         public bool IsGroup { get; set; }
+        public string UserName { get; set; }
+        public bool IsMyGroup { get; set; }
     }
 }

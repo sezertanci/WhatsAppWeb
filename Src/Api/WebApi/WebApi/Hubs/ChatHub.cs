@@ -12,14 +12,18 @@ namespace WebApi.Hubs
         private readonly IUserFriendService userFriendService;
         private readonly IUserChatMessageService userChatMessageService;
         private readonly IUserChatService userChatService;
+        private readonly IGroupUserService groupUserService;
+        private readonly IGroupMessageService groupMessageService;
 
         static List<string> clients = new();
 
-        public ChatHub(IUserFriendService userFriendService, IUserChatMessageService userChatMessageService, IUserChatService userChatService)
+        public ChatHub(IUserFriendService userFriendService, IUserChatMessageService userChatMessageService, IUserChatService userChatService, IGroupUserService groupUserService, IGroupMessageService groupMessageService)
         {
             this.userFriendService = userFriendService;
             this.userChatMessageService = userChatMessageService;
             this.userChatService = userChatService;
+            this.groupUserService = groupUserService;
+            this.groupMessageService = groupMessageService;
         }
 
         public void AddClient(Guid userId)
@@ -48,13 +52,27 @@ namespace WebApi.Hubs
         public async Task GetUserChatsAsync(Guid userId)
         {
             List<ChatViewModel> userChatViewModels = await userChatService.UserChats(userId);
+            List<ChatViewModel> userGroupChatViewModels = await groupUserService.UserGroups(userId);
 
-            await Clients.Caller.UserChats(userChatViewModels);
+            List<ChatViewModel> result = new();
+            result.AddRange(userChatViewModels);
+            result.AddRange(userGroupChatViewModels);
+
+            result = result.OrderByDescending(x => x.SendedDate).ToList();
+
+            await Clients.Caller.UserChats(result);
         }
 
         public async Task GetChatMessagesAsync(Guid userId, Guid friendUserId)
         {
             List<ChatMessageViewModel> chatMessageViewModels = await userChatMessageService.GetChatMessagesAsync(userId, friendUserId);
+
+            await Clients.Caller.ChatMessages(chatMessageViewModels);
+        }
+
+        public async Task GetGroupChatMessagesAsync(Guid userId, Guid groupId)
+        {
+            List<ChatMessageViewModel> chatMessageViewModels = await groupMessageService.GetChatMessagesAsync(userId, groupId);
 
             await Clients.Caller.ChatMessages(chatMessageViewModels);
         }
@@ -68,6 +86,17 @@ namespace WebApi.Hubs
             List<string> connectionIds = users.Select(x => x.ConnectionId).ToList();
 
             await Clients.Clients(connectionIds).ReceivedMessage(result);
+        }
+
+        public async Task SendGroupMessageAsync(SendedGroupMessageViewModel sendedGroupMessageViewModel)
+        {
+            GroupMessageViewModel result = await groupMessageService.SendMessageAsync(sendedGroupMessageViewModel);
+
+            List<SignalRChatUser> users = ChatUserSource.SignalRChatUsers.Where(x => result.UserIds.Contains(x.UserId)).ToList();
+
+            List<string> connectionIds = users.Select(x => x.ConnectionId).ToList();
+
+            await Clients.Clients(connectionIds).ReceivedMessage(result.ChatMessageViewModel);
         }
 
         public async Task HasBeenReadChatMessagesAsync(Guid userId, Guid friendUserId)

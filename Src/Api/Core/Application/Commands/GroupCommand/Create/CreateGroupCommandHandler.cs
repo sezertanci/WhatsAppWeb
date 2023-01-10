@@ -5,7 +5,7 @@ using Common.Models.RequestModels.GroupRequestModels;
 using Domain.Models;
 using MediatR;
 
-namespace Application.Commands.GroupCommand
+namespace Application.Commands.GroupCommand.Create
 {
     public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, Guid>
     {
@@ -30,14 +30,18 @@ namespace Application.Commands.GroupCommand
                 throw new DatabaseValidationException($"Katılımcı olmadan grup oluşturamazsınız!");
 
             User existUser = await userRepository.GetByIdAsync(request.UserId);
+
             if(existUser == null)
                 throw new DatabaseValidationException($"({request.UserId}) Bu Id ile ilgili kullanıcı bulunamadı!");
+
+            List<User> users = await userRepository.GetListAsync(x => request.UserIds.Contains(x.Id));//Groupta olacak tüm kullanıcıları varsa getiriyor
+
+            if(users.Count < 2)
+                throw new DatabaseValidationException($"Grup oluşturabilmek için en az 2 tanımlı kullanıcı olmalıdır!");
 
             Group group = mapper.Map<Group>(request);
 
             await groupRepository.AddAsync(group);
-
-            List<User> users = await userRepository.GetListAsync(x => request.UserIds.Contains(x.Id));//Groupta olacak tüm kullanıcıları varsa getiriyor
 
             List<GroupUser> groupUsers = new();
 
@@ -52,8 +56,7 @@ namespace Application.Commands.GroupCommand
                 groupUsers.Add(groupUser);
             }
 
-            if(groupUsers.Count > 0)
-                await groupUserRepository.AddRangeAsync(groupUsers);
+            await groupUserRepository.AddRangeAsync(groupUsers);
 
             return group.Id;
         }

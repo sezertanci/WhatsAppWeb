@@ -82,6 +82,7 @@
                             <ul class="dropdown-menu dropdown-menu-end" data-bs-display="static">
                                 <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#mdlChatUserFriends">Yeni Sohbet</button></li>
                                 <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#mdlUserFriend">Arkadaş Ekle</button></li>
+                                <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#mdlUserGroup">Grup Oluştur</button></li>
                             </ul>
                         </div>
                     </div>
@@ -132,7 +133,7 @@
                     </div>
                     <div class="col-md-12">
                         <div class="input-group">
-                            <input type="text" class="form-control" id="txtMessage" />
+                            <input type="text" class="form-control" id="txtMessage" required />
                             <button type="button" class="btn btn-outline-success btnSendMessage" id="btnSendMessage" disabled><i class="fa fa-paper-plane"></i></button>
                         </div>
                     </div>
@@ -156,8 +157,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="recipient-name" class="col-form-label">Adı</label>
-                                <input type="text" class="form-control" id="txtMdlUserFriendName">
+                                <label for="txtMdlUserFriendName" class="col-form-label">Adı</label>
+                                <input type="text" class="form-control" id="txtMdlUserFriendName" required>
                             </div>
                         </div>
                     </div>
@@ -165,7 +166,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="message-text" class="col-form-label">Telefon Numarası</label>
-                                <input class="form-control" id="txtMdlUserFriendPhoneNumber" />
+                                <input class="form-control" id="txtMdlUserFriendPhoneNumber" required />
                             </div>
                         </div>
                     </div>
@@ -174,6 +175,41 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
                 <button type="button" class="btn btn-primary" id="btnSaveUserFriend">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mdlUserGroup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grup Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="txtMdlUserGroupName" class="col-form-label">Grup Adı</label>
+                                <input type="text" class="form-control" id="txtMdlUserGroupName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="message-text" class="col-form-label">Katılımcılar</label>
+                                <div style="height:200px;overflow-y:auto" id="divMdlUserFriends"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnSaveUserGroup">Kaydet</button>
             </div>
         </div>
     </div>
@@ -217,6 +253,31 @@
     </div>
 </div>
 
+<div class="modal fade" id="mdlChangeName" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Adı Değiştir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="txtMdlName" class="col-form-label">Adı</label>
+                            <input type="text" class="form-control" id="txtMdlName" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnChangeName">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles{
     <style>
 
@@ -228,7 +289,7 @@
     <script>
         $(document).ready(() => {
             let id = "", userName = "", phoneNumber = "";
-            let selectedUserId = "", selectedChatId = "", senderUserId = "";
+            let selectedUserId = "", selectedGroupId = "", senderUserId = "";
 
             //#region Login
 
@@ -395,6 +456,11 @@
                     connectionChatHub.invoke("HasBeenReadChatMessagesAsync", userId, friendUserId).catch(error => console.log(error));
             }
 
+            function GetGroupChatMessages(userId, groupId) {
+                if (userId != "" && userId != null)
+                    connectionChatHub.invoke("GetGroupChatMessagesAsync", userId, groupId).catch(error => console.log(error));
+            }
+
             connectionChatHub.on("UserFriends", result => {
                 content = "";
                 for (var i = 0; i < result.length; i++) {
@@ -416,7 +482,7 @@
                 content = "";
                 for (var i = 0; i < result.length; i++) {
 
-                    content += '<div class="chatCard ' + (selectedUserId == result[i].id ? "activeChat" : "") + '" userId="' + result[i].id + '" userName="' + result[i].name + '">' +
+                    content += '<div class="chatCard ' + (selectedUserId == result[i].id || selectedGroupId == result[i].id ? "activeChat " : "") + (result[i].isGroup ? "group" : "") + '" chatId="' + result[i].id + '" name="' + result[i].name + '">' +
                         '<div class="d-flex divDflex"> ' +
                         '<span class="userName">' + result[i].name + '</span>' +
                         '<div class="ms-auto">' +
@@ -426,7 +492,7 @@
                         '<div class="d-flex divDflex" > ' +
                         '<div class="me-auto messajInfo" > ' +
                         '<small ' + (result[i].hasBeenRead ? 'style="color:#00ff00"' : "") + '>' + (result[i].isMyMessage ? '<i class="fa-solid fa-check-double"></i>&emsp;' : "") + '</small>' +
-                        '<span>' + result[i].lastMessage + '</span>' +
+                        '<span>' + (result[i].isGroup ? (result[i].isMyMessage ? "Sen: " : (result[i].userName != "" ? result[i].userName + ": " : "")) : "") + result[i].lastMessage + '</span>' +
                         '</div></div></div>';
                 }
 
@@ -440,6 +506,7 @@
                 for (var i = 0; i < result.length; i++) {
                     content += '<div class="d-flex">' +
                         '<div class="' + (result[i].isMyMessage ? "ms-auto divSendMessage" : "me-auto divReceivedMessage") + '">' +
+                        (!result[i].isMyMessage && result[i].userName != null ? '<span style="font-weight:700;color:lightblue">' + result[i].userName + '</span><br/>' : "") +
                         '<span class="messageSpan">' + result[i].message + '</span>' +
                         '<div class="divSmall"><small>' + dateMomentTimeOrDate(result[i].sendedDate) + '</small>' + (result[i].isMyMessage ? '&ensp;<small ' + (result[i].hasBeenRead ? 'style="color:#00ff00"' : "") + '><i class="fa-solid fa-check-double"></i></small>' : "") + '</div></div></div>';
                 }
@@ -464,6 +531,19 @@
                     HasBeenReadChatMessagesAsync(id, selectedUserId);
                 }
 
+                if (selectedGroupId == messageInfo.chatId) {
+                    content = '<div class="d-flex">' +
+                        '<div class="' + (sender ? "ms-auto divSendMessage" : "me-auto divReceivedMessage") + '">' +
+                        (!sender ? '<span style="font-weight:700;color:lightblue">' + messageInfo.userName + '</span><br/>' : "") +
+                        '<span class="messageSpan">' + messageInfo.message + '</span>' +
+                        '<div class="divSmall"><small>' + dateMomentHour(messageInfo.sendedDate) + '</small>' + (sender ? '&ensp;<small ' + (messageInfo.hasBeenRead ? 'style="color:#00ff00"' : "") + '><i class="fa-solid fa-check-double"></i></small>' : "") + '</div></div></div>';
+
+                    $("#divMessageList").append(content);
+                    scrollMessages();
+
+                    //HasBeenReadChatMessagesAsync(id, selectedGroupId);
+                }
+
                 if (!sender)
                     PlayNotificationSound();
 
@@ -478,29 +558,35 @@
             });
 
             $("#btnSendMessage").click(function () {
-                if ($.trim($("#txtMessage").val()) != "") {
-                    data = {
-                        SenderUserId: id,
-                        ReceiverUserId: selectedUserId,
-                        Message: $("#txtMessage").val()
-                    };
+                message = $("#txtMessage").val();
 
-                    connectionChatHub.invoke("SendMessageAsync", data).catch(error => console.log(error));
+                if ($.trim(message) != "") {
+
+                    if (selectedGroupId == "") {
+                        data = {
+                            SenderUserId: id,
+                            ReceiverUserId: selectedUserId,
+                            Message: message
+                        };
+
+                        connectionChatHub.invoke("SendMessageAsync", data).catch(error => console.log(error));
+                    }
+                    else {
+                        data = {
+                            UserId: id,
+                            GroupId: selectedGroupId,
+                            Message: message
+                        };
+
+                        connectionChatHub.invoke("SendGroupMessageAsync", data).catch(error => console.log(error));
+                    }
 
                     $("#txtMessage").val("");
 
-                    GetUserChats(id);
+                    //GetUserChats(id);
                 }
             });
             //#endregion SignalR ChatHub
-
-            $(document).on("click", ".chatCard", function () {
-                $(".chatCard").each(function () {
-                    $(this).removeClass("activeChat");
-                });
-
-                $(this).addClass("activeChat");
-            });
 
             $(document).on("click", ".userFriendCard", function () {
                 friendUserId = $(this).attr("userId");
@@ -511,28 +597,48 @@
                     $("#spnMdlUserFriendName").html($(this).attr("userName"));
                 }
                 else {
+                    selectedUserId = friendUserId;
+
                     $("#mdlChatUserFriends").modal("hide");
                     $("#divSelectedName").html(friendUserName);
                     $("#btnSendMessage").prop("disabled", false);
-                    selectedUserId = friendUserId;
-
-                    $(".chatCard[userId='" + selectedUserId + "']").click();
+                    $("#divMessageList").html("");
+                    $(".chatCard[chatId='" + selectedUserId + "']").click();
                 }
             });
 
             $(document).on("click", ".chatCard", function () {
-                friendUserId = $(this).attr("userId");
-                friendUserName = $(this).attr("userName");
+                $(".chatCard").each(function () {
+                    $(this).removeClass("activeChat");
+                });
 
-                $("#divSelectedName").html(friendUserName);
+                $(this).addClass("activeChat");
+
+                chatId = $(this).attr("chatId");
+                name = $(this).attr("name");
+
+                $("#divSelectedName").html(name);
                 $("#btnSendMessage").prop("disabled", false);
-                selectedUserId = friendUserId;
-
-                GetChatMessages(id, selectedUserId);
-
-                HasBeenReadChatMessagesAsync(id, selectedUserId);
-
                 $("#btnDeleteChat").prop("disabled", false);
+                $("#divMessageList").html("");
+
+                selectedUserId = selectedGroupId = "";
+
+                if (!$(this).hasClass("group")) {
+                    selectedUserId = chatId;
+
+                    GetChatMessages(id, selectedUserId);
+
+                    if ($("#divMessageList > div").last().children("div").hasClass("divReceivedMessage"))
+                        HasBeenReadChatMessagesAsync(id, selectedUserId);
+                }
+                else {
+                    selectedGroupId = chatId;
+
+                    GetGroupChatMessages(id, selectedGroupId);
+
+                    //HasBeenReadGroupChatMessagesAsync(id, selectedGroupId);
+                }
             });
 
             $("#btnDeleteChat").click(function () {
@@ -561,6 +667,66 @@
                 //    async: true
                 //});
             });
+
+            $("#mdlUserGroup").on("show.bs.modal", function () {
+                $.ajax({
+                    type: 'GET',
+                    url: apiAppLink + "api/UserFriend/GetFriends/" + id,
+                    dataType: "json",
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        content = "";
+                        for (var i = 0; i < result.length; i++) {
+                            content += "<label for='chk_" + result[i].Id + "' style='cursor:pointer;'><input class='chkGroupUser' type='checkbox' value='" + result[i].Id + "' id='chk_" + result[i].Id + "' style='cursor:pointer;'/>&emsp;" + result[i].Name + " - " + result[i].PhoneNumber + "</label>";
+                        }
+                        $('#divMdlUserFriends').html(content);
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(err.Message);
+                    },
+                    async: true
+                });
+            });
+
+            $("#btnSaveUserGroup").click(function () {
+                groupName = $("#txtMdlUserGroupName").val();
+                groupUserIds = [];
+
+                $(".chkGroupUser:checked").each(function () {
+                    groupUserIds.push($(this).val());
+                });
+
+                if (groupUserIds.length < 1 || groupName == "")
+                    alert("Lütfen bilgileri doldurunuz");
+
+                data = {
+                    UserId: id,
+                    Name: groupName,
+                    UserIds: groupUserIds
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: apiAppLink + "api/Group/Create",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        GetUserChats(id);
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(err.Message);
+                    },
+                    async: true
+                });
+            })
 
             //#region Scroll
 

@@ -28,17 +28,17 @@ namespace Persistence.Menagers
             userChatIds.AddRange(userChats.Select(x => x.Id));
             userChatIds.AddRange(friendUserChats.Select(x => x.Id));
 
-            List<UserChat> userChatsWithMessage = userChatRepository.Query().Where(x => userChatIds.Contains(x.Id)).Include(x => x.UserChatMessages).ToList();
+            //List<UserChat> userChatsWithMessage = userChatRepository.Query().Where(x => userChatIds.Contains(x.Id)).Include(x => x.UserChatMessages).ToList();
+
+            //List<UserChatMessage> userChatMessages = new();
+            //foreach(var userChatWithMessage in userChatsWithMessage)
+            //{
+            //    userChatMessages.AddRange(userChatWithMessage.UserChatMessages);
+            //}
+
+            //userChatMessages = userChatMessages.OrderByDescending(x => x.CreatedDate).ToList();
 
             List<ChatViewModel> chatViewModels = new List<ChatViewModel>();
-
-            List<UserChatMessage> userChatMessages = new();
-            foreach(var userChatWithMessage in userChatsWithMessage)
-            {
-                userChatMessages.AddRange(userChatWithMessage.UserChatMessages);
-            }
-
-            userChatMessages = userChatMessages.OrderByDescending(x => x.CreatedDate).ToList();
 
             List<UserFriend> userFriends = await userFriendRepository.GetListAsync(x => x.UserId == userId);
 

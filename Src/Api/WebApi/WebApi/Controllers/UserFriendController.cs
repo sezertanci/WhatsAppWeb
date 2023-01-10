@@ -1,4 +1,6 @@
-﻿using Common.Models.RequestModels.UserFriendRequestModels;
+﻿using Application.Queries;
+using Common.Models.Queries;
+using Common.Models.RequestModels.UserFriendRequestModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -7,6 +9,13 @@ namespace WebApi.Controllers
     [ApiController]
     public class UserFriendController : ExtendBaseController
     {
+        [HttpGet("GetFriends/{userId}")]
+        public async Task<IActionResult> GetFriends(Guid userId)
+        {
+            List<GetUsersViewModel> result = await Mediator.Send(new GetUserFriendsQuery(userId));
+
+            return Ok(result);
+        }
         [HttpPost("Create")]
         public async Task<IActionResult> Create([FromBody] CreateUserFriendCommand createUserFriendCommand)
         {
