@@ -119,7 +119,8 @@ namespace Persistence.Menagers
                     Message = sendedMessageViewModel.Message,
                     SendedDate = userChatMessage.CreatedDate,
                     SenderUserId = senderUserChat.UserId,
-                    HasBeenRead = false
+                    HasBeenRead = false,
+                    ChatId = sendedMessageViewModel.ReceiverUserId
                 };
 
                 return receivedMessageViewModel;
@@ -139,7 +140,8 @@ namespace Persistence.Menagers
                     Message = sendedMessageViewModel.Message,
                     SendedDate = userChatMessage.CreatedDate,
                     SenderUserId = sendedMessageViewModel.SenderUserId,
-                    HasBeenRead = false
+                    HasBeenRead = false,
+                    ChatId = sendedMessageViewModel.ReceiverUserId
                 };
 
                 return receivedMessageViewModel;

@@ -268,18 +268,18 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                <button type="button" class="btn btn-primary hidden" data-bs-toggle="modal" data-bs-target="#mdlChangeName" id="btnMdlGroup">Grubunun Adını Güncelle</button>
-                <button type="button" class="btn btn-primary hidden" data-bs-toggle="modal" data-bs-target="#mdlChangeName" id="btnMdlFriend">Arkadaşının Adını Güncelle</button>
+                <button type="button" class="btn btn-primary hidden" data-bs-toggle="modal" data-bs-target="#mdlChangeGroupInfo" id="btnMdlGroup">Grubunun Bilgilerini Düzenle</button>
+                <button type="button" class="btn btn-primary hidden" data-bs-toggle="modal" data-bs-target="#mdlChangeFriendInfo" id="btnMdlFriend">Arkadaşının Bilgilerini Düzenle</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="mdlChangeName" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="mdlChangeGroupInfo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Adı Değiştir</h5>
+                <h5 class="modal-title">Grup Bilgilerini Düzenle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -294,7 +294,36 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                <button type="button" class="btn btn-primary" id="btnChangeName">Kaydet</button>
+                <button type="button" class="btn btn-primary" id="btnChangeGroupInfo">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mdlChangeFriendInfo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Arkadaşının Bilgilerini Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="txtMdlFriendName" class="col-form-label" required>Adı</label>
+                            <input type="text" class="form-control" id="txtMdlFriendName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtMdlPhoneNumber" class="col-form-label" required>Telefon Numarası</label>
+                            <input type="text" class="form-control" id="txtMdlPhoneNumber" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnChangeFriendInfo">Kaydet</button>
             </div>
         </div>
     </div>
@@ -310,9 +339,10 @@
     <script src="~/js/site.js"></script>
     <script>
         $(document).ready(() => {
-            let id = "", userName = "", phoneNumber = "";
-            let selectedUserId = "", selectedGroupId = "", senderUserId = "";
+            let id = "", userName = "", phoneNumber = "", groupName = "";
+            let selectedUserId = "", selectedGroupId = "", selectedUserFriendId = "";
             let selectedGroupName = false, selectedUserName = false;
+            let userFriends = [];
 
             //#region Login
 
@@ -472,6 +502,11 @@
             function GetChatMessages(userId, friendUserId) {
                 if (userId != "" && userId != null)
                     connectionChatHub.invoke("GetChatMessagesAsync", userId, friendUserId).catch(error => console.log(error));
+
+                setTimeout(function () {
+                    if ($("#divMessageList > div > div").last().hasClass("divReceivedMessage") && $("#divMessageList > div > div").last().attr("hasBeenRead") == "false")
+                        HasBeenReadChatMessagesAsync(id, selectedUserId);
+                }, 1000);
             }
 
             function HasBeenReadChatMessagesAsync(userId, friendUserId) {
@@ -485,14 +520,15 @@
             }
 
             connectionChatHub.on("UserFriends", result => {
+                userFriends = result;
                 content = "";
                 for (var i = 0; i < result.length; i++) {
-                    content += '<div class="userFriendCard" userId="' + result[i].userId + '" userName="' + result[i].name + '">' +
+                    content += '<div class="row"><div class="col-md-10 userFriendCard" userId="' + result[i].userId + '" name="' + result[i].name + '">' +
                         '<div class="d-flex divDflex">' +
                         '<span>' + result[i].name + '</span>' +
                         '<div class="ms-auto">' +
                         '<small>' + result[i].phoneNumber + '</small>' +
-                        '</div></div></div>';
+                        '</div></div></div><div class="col-md-2"><button class="btn btn-sm btn-info changeFriendInfo" userFriendId="' + result[i].id + '">Düzenle</button></div></div>';
                 }
 
                 if (content == "")
@@ -528,7 +564,7 @@
 
                 for (var i = 0; i < result.length; i++) {
                     content += '<div class="d-flex">' +
-                        '<div class="' + (result[i].isMyMessage ? "ms-auto divSendMessage" : "me-auto divReceivedMessage") + '">' +
+                        '<div class="' + (result[i].isMyMessage ? "ms-auto divSendMessage" : "me-auto divReceivedMessage") + '" hasBeenRead="' + result[i].hasBeenRead + '">' +
                         (!result[i].isMyMessage && result[i].userName != null ? '<span style="font-weight:700;color:lightblue">' + result[i].userName + '</span><br/>' : "") +
                         '<span class="messageSpan">' + result[i].message + '</span>' +
                         '<div class="divSmall"><small>' + dateMomentTimeOrDate(result[i].sendedDate) + '</small>' + (result[i].isMyMessage ? '&ensp;<small ' + (result[i].hasBeenRead ? 'style="color:#00ff00"' : "") + '><i class="fa-solid fa-check-double"></i></small>' : "") + '</div></div></div>';
@@ -538,11 +574,9 @@
             });
 
             connectionChatHub.on("ReceivedMessage", messageInfo => {
-                senderUserId = messageInfo.senderUserId;
-
                 sender = id == messageInfo.senderUserId;
 
-                if (selectedUserId == messageInfo.receiverUserId || selectedUserId == messageInfo.senderUserId) {
+                if (selectedUserId == messageInfo.chatId || selectedUserId == messageInfo.senderUserId) {
                     content = '<div class="d-flex">' +
                         '<div class="' + (sender ? "ms-auto divSendMessage" : "me-auto divReceivedMessage") + '">' +
                         '<span class="messageSpan">' + messageInfo.message + '</span>' +
@@ -577,7 +611,8 @@
 
                 GetUserChats(id);
 
-                GetChatMessages(id, selectedUserId);
+                if (selectedUserId != "")
+                    GetChatMessages(id, selectedUserId);
             });
 
             $("#btnSendMessage").click(function () {
@@ -612,18 +647,18 @@
             //#endregion SignalR ChatHub
 
             $(document).on("click", ".userFriendCard", function () {
-                friendUserId = $(this).attr("userId");
-                friendUserName = $(this).attr("userName");
+                userId = $(this).attr("userId");
+                userFriendName = $(this).attr("name");
 
-                if (friendUserId == "null") {
+                if (userId == "null") {
                     $("#mdlUserFriendWarning").modal("show");
-                    $("#spnMdlUserFriendName").html($(this).attr("userName"));
+                    $("#spnMdlUserFriendName").html(userFriendName);
                 }
                 else {
-                    selectedUserId = friendUserId;
+                    selectedUserId = userId;
 
                     $("#mdlChatUserFriends").modal("hide");
-                    $("#divSelectedName").html(friendUserName);
+                    $("#divSelectedName").html(userFriendName);
                     $("#btnSendMessage").prop("disabled", false);
                     $("#divMessageList").html("");
                     $(".chatCard[chatId='" + selectedUserId + "']").click();
@@ -653,9 +688,6 @@
                     selectedUserId = chatId;
 
                     GetChatMessages(id, selectedUserId);
-
-                    if ($("#divMessageList > div").last().children("div").hasClass("divReceivedMessage"))
-                        HasBeenReadChatMessagesAsync(id, selectedUserId);
                 }
                 else {
                     selectedGroupId = chatId;
@@ -664,33 +696,8 @@
 
                     //HasBeenReadGroupChatMessagesAsync(id, selectedGroupId);
                 }
-            });
 
-            $("#btnDeleteChat").click(function () {
-                data = {
-                    UserId: id,
-                    FriendUserId: selectedUserId
-                }
-
-                //$.ajax({
-                //    type: 'POST',
-                //    url: apiAppLink + "api/UserChatMessage/Delete",
-                //    dataType: "json",
-                //    data: JSON.stringify(data),
-                //    contentType: 'application/json; charset=utf8',
-                //    beforeSend: function () {
-
-                //    },
-                //    success: function (result) {
-
-                //        GetUserChats(id);
-                //    },
-                //    error: function (xhr) {
-                //        var err = eval("(" + xhr.responseText + ")");
-                //        alert(err.Message);
-                //    },
-                //    async: true
-                //});
+                scrollButton.style.display = "none";
             });
 
             $("#mdlUserGroup").on("show.bs.modal", function () {
@@ -754,16 +761,14 @@
             })
 
             $(document).on("click", ".spnChatName", function () {
-                $("#mdlTitle").html($(this).attr("name"));
+                name = $(this).attr("name");
+                $("#mdlTitle").html(name);
                 $("#mdlChatInfo").modal("show");
 
                 if ($(this).attr("isGroup") == "true") {
-                    if ($(this).attr("isMyGroup") == "true") {
+                    groupName = name;
+                    if ($(this).attr("isMyGroup") == "true")
                         $("#btnMdlGroup").removeClass("hidden");
-
-                        selectedGroupName = true;
-                        selectedUserName = false;
-                    }
 
                     $.ajax({
                         type: 'GET',
@@ -788,11 +793,8 @@
                     });
                 }
                 else {
-                     $('#divMdlGroupUsers').html("");
+                    $('#divMdlGroupUsers').html("");
                     $("#btnMdlFriend").removeClass("hidden");
-
-                    selectedGroupName = false;
-                    selectedUserName = true;
                 }
             });
 
@@ -804,59 +806,146 @@
                     $("#btnMdlGroup").addClass("hidden");
             });
 
-            $("#btnChangeName").click(() => {
-                if (selectedGroupName) {
-                    data = {
-                        GroupId: selectedGroupId,
-                        Name: $("#txtMdlName").val()
-                    };
-                    $.ajax({
-                        type: 'POST',
-                        url: apiAppLink + "api/Group/Update",
-                        dataType: "json",
-                        data: JSON.stringify(data),
-                        contentType: 'application/json; charset=utf8',
-                        beforeSend: function () {
+            $("#btnMdlFriend,#btnMdlGroup").click(() => {
+                $("#mdlChatInfo").modal("hide");
+            });
 
-                        },
-                        success: function (result) {
-                            GetUserChats(id);
-                        },
-                        error: function (xhr) {
-                            var err = eval("(" + xhr.responseText + ")");
-                            alert(err.Message);
-                        },
-                        async: true
-                    });
-                }
+            $("#mdlChangeGroupInfo").on("shown.bs.modal", function () {
+                $("#txtMdlName").val(groupName);
+            });
 
-                if (selectedUserName) {
-                    data = {
-                        UserId: selectedUserId,
-                        Name: $("#txtMdlName").val()
-                    };
-                    $.ajax({
-                        type: 'POST',
-                        url: apiAppLink + "api/UserFriend/Update",
-                        dataType: "json",
-                        data: JSON.stringify(data),
-                        contentType: 'application/json; charset=utf8',
-                        beforeSend: function () {
+            $("#mdlChangeFriendInfo").on("hidden.bs.modal", function () {
+                $("#txtMdlFriendName").val("");
+                $("#txtMdlFriendPhoneNumber").val("");
+            });
 
-                        },
-                        success: function (result) {
-                            GetUserChats(id);
-                        },
-                        error: function (xhr) {
-                            var err = eval("(" + xhr.responseText + ")");
-                            alert(err.Message);
-                        },
-                        async: true
-                    });
-                }
+            $("#btnChangeGroupInfo").click(() => {
+                data = {
+                    Id: selectedGroupId,
+                    UserId: id,
+                    Name: $("#txtMdlName").val()
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: apiAppLink + "api/Group/Update",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        GetUserChats(id);
+
+                        $("#mdlChangeGroupInfo").modal("hide");
+
+                        $(".spnChatName").attr("name", data.Name);
+                        $(".spnChatName").html(data.Name);
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(err.Message);
+                    },
+                    async: true
+                });
+            });
+
+            $(document).on("click", ".changeFriendInfo", function () {
+                selectedUserFriendId = $(this).attr("userFriendId");
+
+                $("#mdlChangeFriendInfo").modal("show");
+
+            });
+
+            $("#mdlChangeFriendInfo").on("shown.bs.modal", function () {
+                for (var i = 0; i < userFriends.length; i++)
+                    if (userFriends[i].userId == selectedUserId) {
+                        $("#txtMdlFriendName").val(userFriends[i].name);
+                        $("#txtMdlPhoneNumber").val(userFriends[i].phoneNumber);
+                    }
+                    else if (userFriends[i].id == selectedUserFriendId) {
+                        $("#txtMdlFriendName").val(userFriends[i].name);
+                        $("#txtMdlPhoneNumber").val(userFriends[i].phoneNumber);
+                    }
+            });
+
+            $("#mdlChangeFriendInfo").on("hidden.bs.modal", function () {
+                $("#txtMdlFriendName").val("");
+                $("#txtMdlPhoneNumber").val("");
+            });
+
+            $("#btnChangeFriendInfo").click(() => {
+                userFriendId = "";
+
+                for (var i = 0; i < userFriends.length; i++)
+                    if (userFriends[i].userId == selectedUserId)
+                        userFriendId = userFriends[i].id;
+                    else if (userFriends[i].id == selectedUserFriendId)
+                        userFriendId = userFriends[i].id;
+
+                data = {
+                    UserId: id,
+                    Name: $("#txtMdlFriendName").val(),
+                    PhoneNumber: $("#txtMdlPhoneNumber").val(),
+                    Id: userFriendId
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: apiAppLink + "api/UserFriend/Update",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf8',
+                    beforeSend: function () {
+
+                    },
+                    success: function (result) {
+                        GetUserChats(id);
+
+                        GetUserFriends(id);
+
+                        $("#mdlChangeFriendInfo").modal("hide");
+
+                        $(".spnChatName").attr("name", data.Name);
+                        $(".spnChatName").html(data.Name);
+                    },
+                    error: function (xhr) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        alert(err.Message);
+                    },
+                    async: true
+                });
             });
 
 
+
+            $("#btnDeleteChat").click(function () {
+                data = {
+                    UserId: id,
+                    FriendUserId: selectedUserId
+                }
+
+                //$.ajax({
+                //    type: 'POST',
+                //    url: apiAppLink + "api/UserChatMessage/Delete",
+                //    dataType: "json",
+                //    data: JSON.stringify(data),
+                //    contentType: 'application/json; charset=utf8',
+                //    beforeSend: function () {
+
+                //    },
+                //    success: function (result) {
+
+                //        GetUserChats(id);
+                //    },
+                //    error: function (xhr) {
+                //        var err = eval("(" + xhr.responseText + ")");
+                //        alert(err.Message);
+                //    },
+                //    async: true
+                //});
+            });
 
             //#region Scroll
 

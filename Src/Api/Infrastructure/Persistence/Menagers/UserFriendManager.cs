@@ -23,6 +23,7 @@ namespace Persistence.Menagers
             List<UserFriendViewModel> userFriendViewModels = user.UserFriends.Select(x => new UserFriendViewModel
             {
                 UserId = users.FirstOrDefault(y => y.PhoneNumber == x.PhoneNumber)?.Id,
+                Id = x.Id,
                 Name = x.Name,
                 PhoneNumber = x.PhoneNumber,
             }).ToList();
