@@ -698,6 +698,8 @@
                 }
 
                 scrollButton.style.display = "none";
+
+                $("#txtMessage").focus();
             });
 
             $("#mdlUserGroup").on("show.bs.modal", function () {
@@ -921,30 +923,74 @@
 
 
             $("#btnDeleteChat").click(function () {
-                data = {
-                    UserId: id,
-                    FriendUserId: selectedUserId
+                if (selectedGroupId == "") {
+                    data = {
+                        UserId: id,
+                        FriendUserId: selectedUserId
+                    }
+
+                    $.ajax({
+                        type: 'DELETE',
+                        url: apiAppLink + "api/UserChatMessage/Delete",
+                        dataType: "json",
+                        data: JSON.stringify(data),
+                        contentType: 'application/json; charset=utf8',
+                        beforeSend: function () {
+
+                        },
+                        success: function (result) {
+
+                            GetUserChats(id);
+
+                            $(".spnChatName").attr("name", "");
+                            $(".spnChatName").html("");
+                            $("#divMessageList").html("");
+
+                            $("#btnDeleteChat").prop("desibled", true);
+
+                            selectedUserId = "";
+                        },
+                        error: function (xhr) {
+                            var err = eval("(" + xhr.responseText + ")");
+                            alert(err.Message);
+                        },
+                        async: true
+                    });
                 }
+                else {
+                    data = {
+                        UserId: id,
+                        GroupId: selectedGroupId
+                    }
 
-                //$.ajax({
-                //    type: 'POST',
-                //    url: apiAppLink + "api/UserChatMessage/Delete",
-                //    dataType: "json",
-                //    data: JSON.stringify(data),
-                //    contentType: 'application/json; charset=utf8',
-                //    beforeSend: function () {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: apiAppLink + "api/GroupMessage/Delete",
+                        dataType: "json",
+                        data: JSON.stringify(data),
+                        contentType: 'application/json; charset=utf8',
+                        beforeSend: function () {
 
-                //    },
-                //    success: function (result) {
+                        },
+                        success: function (result) {
 
-                //        GetUserChats(id);
-                //    },
-                //    error: function (xhr) {
-                //        var err = eval("(" + xhr.responseText + ")");
-                //        alert(err.Message);
-                //    },
-                //    async: true
-                //});
+                            GetUserChats(id);
+
+                            $(".spnChatName").attr("name", "");
+                            $(".spnChatName").html("");
+                            $("#divMessageList").html("");
+
+                            $("#btnDeleteChat").prop("desibled", true);
+
+                            selectedGroupId = "";
+                        },
+                        error: function (xhr) {
+                            var err = eval("(" + xhr.responseText + ")");
+                            alert(err.Message);
+                        },
+                        async: true
+                    });
+                }
             });
 
             //#region Scroll

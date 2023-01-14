@@ -3,6 +3,7 @@ using Application.Interfaces.Services;
 using Common.Models.ViewModels;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Persistence.Menagers
 {
@@ -41,7 +42,7 @@ namespace Persistence.Menagers
             List<GroupMessage> groupMessages = new();
             foreach(var userGroupWithMessage in userGroupsWithMessage)
             {
-                groupMessages.AddRange(userGroupWithMessage.GroupMessages);
+                groupMessages.AddRange(userGroupWithMessage.GroupMessages.Where(x => x.ShowToUsers != null && x.ShowToUsers.Contains(userId.ToString())));
             }
 
             groupMessages = groupMessages.OrderByDescending(x => x.CreatedDate).ToList();

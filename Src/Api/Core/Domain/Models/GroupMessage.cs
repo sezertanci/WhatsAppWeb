@@ -10,6 +10,8 @@ namespace Domain.Models
         [Required(AllowEmptyStrings = false, ErrorMessage = "Boş geçemezsiniz.")]
         public string Message { get; set; }
 
+        public string ShowToUsers { get; set; }
+
         public virtual GroupUser GroupUser { get; set; }
 
         public GroupMessage()

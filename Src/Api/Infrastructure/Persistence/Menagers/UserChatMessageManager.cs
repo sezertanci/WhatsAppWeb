@@ -3,6 +3,7 @@ using Application.Interfaces.Services;
 using Common.Models.ViewModels;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Persistence.Menagers
 {
@@ -33,7 +34,7 @@ namespace Persistence.Menagers
 
             foreach(var userChat in chat.UserChats)
             {
-                foreach(var userChatMessage in userChat.UserChatMessages.Where(x => !x.Deleted))
+                foreach(var userChatMessage in userChat.UserChatMessages.Where(x => !x.Deleted && x.ShowToUsers != null && x.ShowToUsers.Contains(userId.ToString())))
                 {
                     bool isMyMessage = userChatMessage.UserChatId == userChat.Id && userChat.UserId == userId;
 
@@ -109,7 +110,8 @@ namespace Persistence.Menagers
                 UserChatMessage userChatMessage = new()
                 {
                     Message = sendedMessageViewModel.Message,
-                    UserChatId = userChats.FirstOrDefault(x => x.UserId == sendedMessageViewModel.SenderUserId).Id
+                    UserChatId = userChats.FirstOrDefault(x => x.UserId == sendedMessageViewModel.SenderUserId).Id,
+                    ShowToUsers = CombiningUserIds(sendedMessageViewModel.SenderUserId, sendedMessageViewModel.ReceiverUserId)
                 };
 
                 await userChatMessageRepository.AddAsync(userChatMessage);
@@ -130,7 +132,8 @@ namespace Persistence.Menagers
                 UserChatMessage userChatMessage = new()
                 {
                     Message = sendedMessageViewModel.Message,
-                    UserChatId = senderUserChats.FirstOrDefault(x => x.UserId == sendedMessageViewModel.SenderUserId && x.ChatId == chatId).Id
+                    UserChatId = senderUserChats.FirstOrDefault(x => x.UserId == sendedMessageViewModel.SenderUserId && x.ChatId == chatId).Id,
+                    ShowToUsers = CombiningUserIds(sendedMessageViewModel.SenderUserId, sendedMessageViewModel.ReceiverUserId)
                 };
 
                 await userChatMessageRepository.AddAsync(userChatMessage);
@@ -146,6 +149,11 @@ namespace Persistence.Menagers
 
                 return receivedMessageViewModel;
             }
+        }
+
+        string CombiningUserIds(Guid senderUserId, Guid receiverUserId)
+        {
+            return senderUserId + "," + receiverUserId;
         }
     }
 }

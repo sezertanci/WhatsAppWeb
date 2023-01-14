@@ -9,13 +9,11 @@ namespace Application.Commands.UserChatMessageCommand.Delete
     {
         private readonly IUserChatRepository userChatRepository;
         private readonly IUserChatMessageRepository userChatMessageRepository;
-        private readonly IChatRepository chatRepository;
 
-        public DeleteUserChatMessageCommandHandler(IUserChatRepository userChatRepository, IUserChatMessageRepository userChatMessageRepository, IChatRepository chatRepository)
+        public DeleteUserChatMessageCommandHandler(IUserChatRepository userChatRepository, IUserChatMessageRepository userChatMessageRepository)
         {
             this.userChatRepository = userChatRepository;
             this.userChatMessageRepository = userChatMessageRepository;
-            this.chatRepository = chatRepository;
         }
 
         public async Task<bool> Handle(DeleteUserChatMessageCommand request, CancellationToken cancellationToken)
@@ -26,19 +24,21 @@ namespace Application.Commands.UserChatMessageCommand.Delete
 
             Guid chatId = userChats.Select(x => x.ChatId).ToList().Intersect(friendUserChats.Select(x => x.ChatId).ToList()).FirstOrDefault();
 
-            UserChat userChat = await userChatRepository.GetFirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == request.UserId, includes: y => y.UserChatMessages);
+            List<UserChat> userChatss = await userChatRepository.GetListAsync(x => x.ChatId == chatId, includes: y => y.UserChatMessages);
 
             List<UserChatMessage> userChatMessages = new();
 
-            foreach (var userChatMessage in userChat.UserChatMessages.Where(x => !x.Deleted))
+            foreach(var userChat in userChatss)
             {
-                userChatMessage.Deleted = true;
-                userChatMessage.DeletedDate = DateTime.Now;
+                foreach(var userChatMessage in userChat.UserChatMessages.Where(x => x.ShowToUsers != null && x.ShowToUsers.Contains(request.UserId.ToString())))
+                {
+                    userChatMessage.ShowToUsers = userChatMessage.ShowToUsers.Replace(request.UserId.ToString(), "").Replace(",", "");
 
-                userChatMessages.Add(userChatMessage);
+                    userChatMessages.Add(userChatMessage);
+                }
             }
 
-            if (userChatMessages.Count > 0)
+            if(userChatMessages.Count > 0)
                 await userChatMessageRepository.UpdateRangeAsync(userChatMessages);
 
             return true;

@@ -12,6 +12,9 @@ namespace Domain.Models
 
         public bool HasBeenRead { get; set; }
 
+        [MaxLength(100)]
+        public string ShowToUsers { get; set; }
+
         public virtual UserChat UserChat { get; set; }
 
         public UserChatMessage()

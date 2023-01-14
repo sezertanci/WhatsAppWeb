@@ -29,7 +29,7 @@ namespace Persistence.Menagers
 
             foreach(var groupUser in groupUsers)
             {
-                foreach(var groupMessage in groupUser.GroupMessages)
+                foreach(var groupMessage in groupUser.GroupMessages.Where(x => !x.Deleted && x.ShowToUsers != null && x.ShowToUsers.Contains(userId.ToString())))
                 {
                     ChatMessageViewModel chatMessageViewModel = new()
                     {
@@ -60,7 +60,8 @@ namespace Persistence.Menagers
             GroupMessage groupMessage = new()
             {
                 GroupUserId = groupUser.Id,
-                Message = sendedGroupMessageViewModel.Message
+                Message = sendedGroupMessageViewModel.Message,
+                ShowToUsers = CombiningUserIds(groupUsers.Select(x => x.UserId).ToList())
             };
 
             await groupMessageRepository.AddAsync(groupMessage);
@@ -79,6 +80,20 @@ namespace Persistence.Menagers
             };
 
             return groupMessageViewModel;
+        }
+
+        string CombiningUserIds(List<Guid> userIds)
+        {
+            string result = "";
+
+            foreach(var userId in userIds)
+            {
+                result += userId + ",";
+            }
+
+            result = result[..^1];
+
+            return result;
         }
     }
 }
